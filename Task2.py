@@ -5,6 +5,10 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
+#Assumption:
+
+# - It takes 1 second of time, for each of the person to take 1 step on the grid!
+
 
 def One_D_random_walk_Match(start_pos_A, start_pos_B, prob_left_A, prob_left_B, prob_not_moving_A = 0, prob_not_moving_B = 0):
 
