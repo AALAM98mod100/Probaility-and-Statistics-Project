@@ -30,6 +30,9 @@ def One_D_random_walk(start_pos, steps, prob_left, prob_not_moving = 0):
         nums.append(j)
 
     
+    Distance_from_start_pos = randomWalk[-1] - randomWalk[0]
+
+    print("Distance from starting position is {}".format(Distance_from_start_pos))
 
     plt.plot(randomWalk, nums)
     plt.show()
