@@ -2,10 +2,14 @@ from random import random
 from random import seed
 import numpy as np
 import matplotlib.pyplot as plt
+from matplotlib.animation import FuncAnimation
+
 
 
 
 def One_D_random_walk(start_pos, steps, prob_left, prob_not_moving = 0):
+
+    fig, axs = plt.subplots()
 
     prob_right = 1 - prob_left - prob_not_moving
 
@@ -34,8 +38,30 @@ def One_D_random_walk(start_pos, steps, prob_left, prob_not_moving = 0):
 
     print("Distance from starting position is {}".format(Distance_from_start_pos))
 
-    plt.plot(randomWalk, nums)
+    #plt.plot(randomWalk, nums)
+
+
+    xdata, ydata = [], []
+    ln, = plt.plot(xdata,ydata)
+
+    def init():
+        axs.set_xlim((start_pos - steps)/2, (start_pos + steps)/2)
+        axs.set_ylim(0, steps)
+        ln.set_data([], [])
+        return ln,
+
+    def update(frame):
+        xdata.append(randomWalk[int(frame)])
+        ydata.append(int(frame))
+        ln.set_data(xdata, ydata)
+        return ln,
+
+
+    ani = FuncAnimation(fig, update, frames=np.linspace(0, len(randomWalk)-1, num=len(randomWalk)), interval = 20,
+                    init_func=init, blit=True, repeat=False)
+
+
     plt.show()
 
 
-#One_D_random_walk(0, 1000, .5)
+#One_D_random_walk(0, 100, 0.5)
