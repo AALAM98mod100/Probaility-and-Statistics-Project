@@ -3,6 +3,8 @@ import math
 from random import seed
 import numpy as np
 import matplotlib.pyplot as plt
+from matplotlib.animation import FuncAnimation
+
 
 
 #Assumption:
@@ -11,6 +13,8 @@ import matplotlib.pyplot as plt
 
 
 def One_D_random_walk_Match(start_pos_A, start_pos_B, prob_left_A, prob_left_B, prob_not_moving_A = 0, prob_not_moving_B = 0):
+
+    fig, axs = plt.subplots()
 
     prob_right_A = 1 - prob_left_A - prob_not_moving_A
     prob_right_B = 1 - prob_left_B - prob_not_moving_B
@@ -58,8 +62,40 @@ def One_D_random_walk_Match(start_pos_A, start_pos_B, prob_left_A, prob_left_B, 
     
     print("The time taken for both people to meet on the path is {} seconds".format(steps))
 
-    plt.plot(randomWalk_A, nums)
-    plt.plot(randomWalk_B, nums)
+    #plt.plot(randomWalk_A, nums)
+    #plt.plot(randomWalk_B, nums)
+
+
+    x_Adata, y_Adata, x_Bdata, y_Bdata = [], [], [], []
+    ln, = plt.plot(x_Adata,y_Adata)
+    ln2, = plt.plot(x_Bdata,y_Bdata)
+
+
+    def init():
+        if (min(randomWalk_A) > max(randomWalk_B)):
+            axs.set_xlim(min(randomWalk_B), max(randomWalk_A))
+        else:
+            axs.set_xlim(min(randomWalk_A), max(randomWalk_B))
+
+
+        axs.set_ylim(0, len(nums)+10)
+        ln.set_data([], [])
+        ln2.set_data([], [])
+        return ln, ln2,
+
+    def update(frame):
+        x_Adata.append(randomWalk_A[int(frame)])
+        y_Adata.append(int(frame))
+        x_Bdata.append(randomWalk_B[int(frame)])
+        y_Bdata.append(int(frame))
+        ln.set_data(x_Adata, y_Adata)
+        ln2.set_data(x_Bdata, y_Bdata)
+        return ln, ln2,
+
+
+    ani = FuncAnimation(fig, update, frames=np.linspace(0, len(randomWalk_A)-1, num=len(randomWalk_A)), interval = 1,
+                    init_func=init, blit=True, repeat=False)
+
     plt.show()
 
 
