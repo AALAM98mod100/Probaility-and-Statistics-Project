@@ -1,95 +1,271 @@
-from random import random
-from random import seed
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
 import math
+from sympy import Point, Line, solve, Eq, symbols, N
 
 
 
+def circular_random_walk(size = 100000):
 
-def Two_D_random_walk(start_pos_x, start_pos_y, steps):
 
     fig, axs = plt.subplots()
 
-    Radius = 5.64189584
-    Overflow = 0
-
-    randomWalk_r = np.random.uniform(0,1, size=steps)   #Continuous Random Step
-    randomWalk_thet = np.random.uniform(0,2*np.pi, size=steps)   #Continuous Random Orientation
+    Radius = 100
+    step_addition = 0
 
 
-# ##
-#     randomWalk_r = [5,3,1]
-#     randomWalk_thet = [np.pi/2, np.pi/2, np.pi/3]
-
-# ##  
+    randomWalk_x= [0]
+    randomWalk_y= [0]
 
 
-
-    randomWalk_thet = np.cumsum(randomWalk_thet)
-
-
-    randomWalk_x= [start_pos_x]
-    randomWalk_y= [start_pos_y]
-
-    for i in range(1, steps):
-
-        x_coordinate = randomWalk_r[i] * np.cos(randomWalk_thet[i])
-        y_coordinate = randomWalk_r[i] * np.sin(randomWalk_thet[i])
+    counter = 1
 
 
-        new_x = randomWalk_x[i-1] + x_coordinate
-        new_y = randomWalk_y[i-1] + y_coordinate
+    while counter < (size + 1):
+        i = counter
+
+        angle = np.random.uniform(0, 2*np.pi, size = 1)
+        distance = np.random.uniform(0, 1, size = 1)
+
+        x_coordinate = distance[0] * np.cos(angle[0])
+        y_coordinate = distance[0] * np.sin(angle[0])
+
+
+
+        new_x = randomWalk_x[-1] + x_coordinate
+        new_y = randomWalk_y[-1] + y_coordinate
+
+        
         
 
         distance_from_origin = math.sqrt((new_x)**2 + (new_y)**2)
 
-        if distance_from_origin >= Radius:
-            Overflow = distance_from_origin - Radius
+        if distance_from_origin >= (Radius):
 
-            ###
-                # RE-ENTRY LOGIC HERE
-            ###
+            new_x = round(new_x, 20)
+            new_y = round(new_y, 20)
+
+            new_x = float('%.3f'%(new_x))
+            new_y = float('%.3f'%(new_y))
+
+            old_x = round(randomWalk_x[-1], 20)
+            old_y = round(randomWalk_y[-1], 20) 
+
+            old_x = float('%.3f'%(old_x))
+            old_y = float('%.3f'%(old_y))           
+
+            p1, p2 = Point(old_x, old_y) , Point(new_x, new_y)
+
+            if p1.equals(p2):
+                randomWalk_x.append(old_x)
+                randomWalk_y.append(old_y)
+
+                counter+=1
+                
+                continue
+                
+
+
+            line = Line(p1, p2)
+            a, b, c = line.coefficients
+
+
+            x, y = symbols('x,y')
+            eq1 = Eq((x)**2 + (y)**2 - (Radius)**2, 0, evaluate=False)
+            eq2 = Eq((a*x) + (b*y) + c, 0, evaluate=False)
+
+
+            sol = solve([eq1, eq2], [x, y])
+
+
+            #find the point on the circumference where our line will touch, call it circpoint
+            try:
+                sol1 = Point(sol[0][0], sol[0][1])
+                sol2 = Point(sol[1][0], sol[1][1])                
+
+                dist_sol1 = p1.distance(sol1)
+                dist_sol2 = p1.distance(sol2)
+
+                if dist_sol1 > dist_sol2:
+                    circ_point = sol[1]
+                elif dist_sol1 < dist_sol2:
+                    circ_point = sol[0]
+                else:
+                    d1 = sol1.distance(p2)
+                    d2 = sol2.distance(p2)
+
+                    if d1 < d2:
+                        circ_point = sol[0]
+                    else:
+                        circ_point = sol[1]
+
+                    
+
+                circ_point = Point(circ_point[0], circ_point[1])
+            except:
+                randomWalk_x.append(old_x)
+                randomWalk_y.append(old_y)
+
+
+                
+                counter+=1
+                continue
+                
+
+            #we know the overflow amount, call that overflowed
+            overflowed = p2.distance(circ_point)
+
+
+            #get the vector from our curr_pos to circpoint, call it incident
+            incident = np.array([circ_point[0] - p1[0], circ_point[1] - p1[1]])
+
+
+            #circpoint to origin vector
+            normal = np.array([circ_point[0], circ_point[1]])
+
+
+            #-find the angle between incident and normal using dot product wali equation, call that theta
+
+            if p1.equals(circ_point):
+                randomWalk_x.append(old_x)
+                randomWalk_y.append(old_y)
+
+
+                
+                counter+=1
+                
+                continue           
+
+
+            dot = (circ_point[0]*incident[0]) + (circ_point[1]*incident[1])
+
+            magnitude1 = math.sqrt(circ_point[0]**2 + circ_point[1]**2)
+            magnitude2 = math.sqrt(incident[0]**2 + incident[1]**2) 
+
+            ang = dot / (magnitude1 * magnitude2)
+
+            main_ang = math.acos(ang)
+
+
+            Theta = main_ang
+
+            if p2[0] < 0 and p2[1] > 0:    #second
+                if incident[1] >= incident[0]:
+                    Theta = float(-Theta)
+                else:
+                    Theta = float(-Theta)
+
+            elif p2[0] > 0 and p2[1] > 0:   #first
+                if incident[1] >= incident[0]:
+                    Theta = float(-Theta)
+                else:
+                    Theta = float(Theta)
+            
+            elif p2[0] > 0 and p2[1] < 0:
+                if incident[1] <= -incident[0]:   #fourth
+                    Theta = float(Theta)
+                else:
+                    Theta = float(-Theta)
+
+            elif p2[0] < 0 and p2[1] < 0:
+                if incident[1] <= incident[0]:
+                    Theta = float(-Theta)
+                else:
+                    Theta = float(Theta)
+
+            else:
+                Theta = float(Theta)
+
+            
+
+            #-form a 2x2 rotation matrix, uska format dekh lo aram se mile ga
+            rotation_matrix = np.array([[np.cos(Theta), -np.sin(Theta)],[np.sin(Theta), np.cos(Theta)]])
+
+
+            #-multiply the rotation matrix by the normal vector to get another 2x1 vector, call it reflected
+            reflected = np.dot(rotation_matrix, normal)
+
+            reflected *= -1
+
+
+            #-find the unit vector in the direction of reflected, call it ref_unit
+            ref_unit = reflected / math.sqrt(reflected[0]**2 + reflected[1]**2)
+
+
+            #-scalar multiply ref_unit with overflow
+            ref_point = ref_unit * overflowed
+
+            #-us vector ke components ko add to circpoint ke coordinates to get the final coordinates
+            final = circ_point + ref_point
+            
+
+            #-add both circ point (optional but will look better) and final coord to the arrays
+            randomWalk_x.append(circ_point[0])
+            randomWalk_y.append(circ_point[1])
+            
+
+            distance_from_origin = math.sqrt((final[0])**2 + (final[1])**2)
+
+            counter+=1
+            if distance_from_origin >= Radius:
+                continue
+            else:
+                randomWalk_x.append(final[0])
+                randomWalk_y.append(final[1])
+
+
+
+            step_addition += 1
+            continue
 
 
         randomWalk_x.append(new_x)
         randomWalk_y.append(new_y)
-
-
-    #randomWalk_x = np.cumsum(randomWalk_x)
-    #randomWalk_y = np.cumsum(randomWalk_y)
+        counter += 1
 
 
 
-    #plt.plot(randomWalk, nums)
 
 
-    
-
-    xdata, ydata = [], []
-    ln, = plt.plot(xdata,ydata)
-
-    def init():
-        #Radius = 5.64189584 when area of circle = 100 unit^2
-        axs.set_xlim(-Radius,Radius)
-        axs.set_ylim(-Radius,Radius)
-        ln.set_data([], [])
-        return ln,
-
-    def update(frame):
-        xdata.append(randomWalk_x[int(frame)])
-        ydata.append(randomWalk_y[int(frame)])
-        ln.set_data(xdata, ydata)
-        return ln,
+    size = size + step_addition
 
 
-    ani = FuncAnimation(fig, update, frames=np.linspace(0, steps, steps, endpoint=False), interval = 20,
-                    init_func=init, blit=True, repeat=False)
+#########################################################
+#UNCOMMENT FOR ANIMATION
+
+    # xdata, ydata = [], []
+    # ln, = plt.plot(xdata,ydata)
+
+    # def init():
+    #     #Radius = 5.64189584 when area of circle = 100 unit^2
+    #     axs.set_xlim(-Radius,Radius)
+    #     axs.set_ylim(-Radius,Radius)
+    #     ln.set_data([], [])
+    #     return ln,
+
+    # def update(frame):
+    #     xdata.append(randomWalk_x[int(frame)])
+    #     ydata.append(randomWalk_y[int(frame)])
+    #     ln.set_data(xdata, ydata)
+    #     return ln,
 
 
-    plt.polar(2*np.pi, 100)
+    # ani = FuncAnimation(fig, update, frames=np.linspace(0, size, size+1, endpoint=True), interval = 20,
+    #                 init_func=init, blit=True, repeat=False)
+
+
+#ANIMATION CODE
+########################################################
+
+
+    circle1=plt.Circle((0,0),Radius,color='r', alpha= 0.2)
+    plt.gcf().gca().add_artist(circle1)
+
+    plt.plot(randomWalk_x, randomWalk_y)
+
     plt.show()
 
 
-Two_D_random_walk(0, 0, 1000)
+
+circular_random_walk()
