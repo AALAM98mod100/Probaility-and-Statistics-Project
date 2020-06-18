@@ -10,26 +10,38 @@ def circular_random_walk():
 
     fig, axs = plt.subplots()
 
-    Radius = 100
+    Radius = 6
     step_addition_A = 0
     step_addition_B = 0
 
 #####
-#Random initial point selection logic goes now
+##Choosing initial points
 
+    r_A = np.random.uniform(0,Radius, size = 1)[0]
+    r_B = np.random.uniform(0,Radius, size = 1)[0]
+
+    thet_A = np.random.uniform(0, 2*np.pi, size = 1)[0]
+    thet_B = np.random.uniform(0, 2*np.pi, size = 1)[0]
+
+    x_A = r_A * np.cos(thet_A)
+    y_A = r_A * np.sin(thet_A)
+
+    x_B = r_B * np.cos(thet_B)
+    y_B = r_B * np.sin(thet_B)
 
 ####
 
 
-    randomWalk_x_A= [-5]
-    randomWalk_y_A= [-5]
+    randomWalk_x_A= [x_A]
+    randomWalk_y_A= [y_A]
+    
+
+    randomWalk_x_B= [x_B]
+    randomWalk_y_B= [y_B]
+    
+
     flag_A_ref = False
-
-    randomWalk_x_B= [5]
-    randomWalk_y_B= [5]
     flag_B_ref = False
-
-
     steps = 0
 
     while True:
@@ -393,8 +405,8 @@ def circular_random_walk():
                 flag_B_ref = True
                 break
             else:
-                randomWalk_x_A.append(final[0])
-                randomWalk_y_A.append(final[1])
+                randomWalk_x_B.append(final[0])
+                randomWalk_y_B.append(final[1])
 
 
 
@@ -428,12 +440,13 @@ def circular_random_walk():
         dist_between_particles = math.sqrt((curr_B[0] - curr_A[0])**2 + (curr_B[1] - curr_A[1])**2)
 
         if dist_between_particles <= 1:
+            return steps
             break
 
 
 
-
-
+    return steps
+    
     #size = size + step_addition
 
 
@@ -477,4 +490,8 @@ def circular_random_walk():
 
 
 
-circular_random_walk()
+simulations = 200
+results = []
+
+for i in range(simulations):
+    results.append(circular_random_walk)
