@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
 import math
 from sympy import Point, Line, solve, Eq, symbols, N
+import csv
 
 
 
@@ -10,6 +11,8 @@ def circular_random_walk(size = 100000):
 
 
     fig, axs = plt.subplots()
+    plt.xlabel("Position - x")
+    plt.ylabel("Position - y")
 
     Radius = 100
     step_addition = 0
@@ -23,7 +26,6 @@ def circular_random_walk(size = 100000):
 
 
     while counter < (size + 1):
-        i = counter
 
         angle = np.random.uniform(0, 2*np.pi, size = 1)
         distance = np.random.uniform(0, 1, size = 1)
@@ -43,17 +45,15 @@ def circular_random_walk(size = 100000):
 
         if distance_from_origin >= (Radius):
 
-            new_x = round(new_x, 20)
-            new_y = round(new_y, 20)
 
-            new_x = float('%.3f'%(new_x))
-            new_y = float('%.3f'%(new_y))
+            new_x = ('%.3f'%(new_x))
+            new_y = ('%.3f'%(new_y))
 
-            old_x = round(randomWalk_x[-1], 20)
-            old_y = round(randomWalk_y[-1], 20) 
+            old_x = randomWalk_x[-1]
+            old_y = randomWalk_y[-1] 
 
-            old_x = float('%.3f'%(old_x))
-            old_y = float('%.3f'%(old_y))           
+            old_x = ('%.3f'%(old_x))
+            old_y = ('%.3f'%(old_y))           
 
             p1, p2 = Point(old_x, old_y) , Point(new_x, new_y)
 
@@ -135,13 +135,13 @@ def circular_random_walk(size = 100000):
                 
                 counter+=1
                 
-                continue           
+                continue            
 
 
             dot = (circ_point[0]*incident[0]) + (circ_point[1]*incident[1])
 
-            magnitude1 = math.sqrt(circ_point[0]**2 + circ_point[1]**2)
-            magnitude2 = math.sqrt(incident[0]**2 + incident[1]**2) 
+            magnitude1 = (circ_point[0]**2 + circ_point[1]**2)**(0.5)
+            magnitude2 = (incident[0]**2 + incident[1]**2)**(0.5)
 
             ang = dot / (magnitude1 * magnitude2)
 
@@ -151,31 +151,23 @@ def circular_random_walk(size = 100000):
             Theta = main_ang
 
             if p2[0] < 0 and p2[1] > 0:    #second
-                if incident[1] >= incident[0]:
-                    Theta = float(-Theta)
-                else:
-                    Theta = float(-Theta)
+                Theta = -Theta
 
             elif p2[0] > 0 and p2[1] > 0:   #first
                 if incident[1] >= incident[0]:
-                    Theta = float(-Theta)
+                    Theta = (-Theta)
                 else:
-                    Theta = float(Theta)
+                    Theta = (Theta)
             
             elif p2[0] > 0 and p2[1] < 0:
-                if incident[1] <= -incident[0]:   #fourth
-                    Theta = float(Theta)
-                else:
-                    Theta = float(-Theta)
+                if incident[1] > -incident[0]:   #fourth
+                    Theta = (-Theta)
 
             elif p2[0] < 0 and p2[1] < 0:
                 if incident[1] <= incident[0]:
-                    Theta = float(-Theta)
-                else:
-                    Theta = float(Theta)
+                    Theta = (-Theta)
+                
 
-            else:
-                Theta = float(Theta)
 
             
 
@@ -224,15 +216,24 @@ def circular_random_walk(size = 100000):
         randomWalk_y.append(new_y)
         counter += 1
 
+        if counter % 1000 == 0:
+            print(counter)
 
 
+
+    distance_from_origin = math.sqrt((randomWalk_x[-1])**2 + (randomWalk_y[-1])**2)
+
+
+    ### Uncomment to see plot
+    #return distance_from_origin
+    
 
 
     size = size + step_addition
 
 
 #########################################################
-#UNCOMMENT FOR ANIMATION
+##UNCOMMENT FOR ANIMATION
 
     # xdata, ydata = [], []
     # ln, = plt.plot(xdata,ydata)
@@ -255,7 +256,7 @@ def circular_random_walk(size = 100000):
     #                 init_func=init, blit=True, repeat=False)
 
 
-#ANIMATION CODE
+##ANIMATION CODE
 ########################################################
 
 
@@ -265,6 +266,7 @@ def circular_random_walk(size = 100000):
     plt.plot(randomWalk_x, randomWalk_y)
 
     plt.show()
+
 
 
 

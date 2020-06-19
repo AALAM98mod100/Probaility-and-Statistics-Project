@@ -3,25 +3,32 @@ import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
 import math
 from sympy import Point, Line, solve, Eq, symbols, N
+import cProfile
+import pstats
+
+
+
 
 
 
 def circular_random_walk():
 
     fig, axs = plt.subplots()
+    plt.xlabel("Position - x")
+    plt.ylabel("Position - y")
 
-    Radius = 6
+    Radius = 100
     step_addition_A = 0
     step_addition_B = 0
 
 #####
 ##Choosing initial points
 
-    r_A = np.random.uniform(0,Radius, size = 1)[0]
-    r_B = np.random.uniform(0,Radius, size = 1)[0]
+    r_A = np.random.uniform(0,Radius)
+    r_B = np.random.uniform(0,Radius)
 
-    thet_A = np.random.uniform(0, 2*np.pi, size = 1)[0]
-    thet_B = np.random.uniform(0, 2*np.pi, size = 1)[0]
+    thet_A = np.random.uniform(0, 2*np.pi)
+    thet_B = np.random.uniform(0, 2*np.pi)
 
     x_A = r_A * np.cos(thet_A)
     y_A = r_A * np.sin(thet_A)
@@ -44,6 +51,8 @@ def circular_random_walk():
     flag_B_ref = False
     steps = 0
 
+    counter = 0
+
     while True:
         angle_A = np.random.uniform(0, 2*np.pi, size = 1)
         angle_B = np.random.uniform(0, 2*np.pi, size = 1)
@@ -65,22 +74,16 @@ def circular_random_walk():
         new_y_B = randomWalk_y_B[-1] + y_coordinate_B
 
         
-        distance_from_origin_A = math.sqrt((new_x_A)**2 + (new_y_A)**2)
-        distance_from_origin_B = math.sqrt((new_x_B)**2 + (new_y_B)**2)
+        distance_from_origin_A = ((new_x_A)**2 + (new_y_A)**2)**(0.5)
+        distance_from_origin_B = ((new_x_B)**2 + (new_y_B)**2)**(0.5)
 
         while distance_from_origin_A >= (Radius):
 
-            new_x_A = round(new_x_A, 20)
-            new_y_A = round(new_y_A, 20)
+            new_x_A = '%.3f'%(new_x_A)
+            new_y_A = '%.3f'%(new_y_A)
 
-            new_x_A = float('%.3f'%(new_x_A))
-            new_y_A = float('%.3f'%(new_y_A))
-
-            old_x_A = round(randomWalk_x_A[-1], 20)
-            old_y_A = round(randomWalk_y_A[-1], 20) 
-
-            old_x_A = float('%.3f'%(old_x_A))
-            old_y_A = float('%.3f'%(old_y_A))           
+            old_x_A = '%.3f'%(randomWalk_x_A[-1])
+            old_y_A = '%.3f'%(randomWalk_y_A[-1])             
 
             p1, p2 = Point(old_x_A, old_y_A) , Point(new_x_A, new_y_A)
 
@@ -106,35 +109,24 @@ def circular_random_walk():
 
 
             #find the point on the circumference where our line will touch, call it circpoint
-            try:
-                sol1 = Point(sol[0][0], sol[0][1])
-                sol2 = Point(sol[1][0], sol[1][1])                
+            
+            sol1 = (sol[0][0], sol[0][1])
+            sol2 = (sol[1][0], sol[1][1])                
 
-                dist_sol1 = p1.distance(sol1)
-                dist_sol2 = p1.distance(sol2)
+            
+            d1 = ((p2[0] - sol1[0])**2 + (p2[1] - sol1[1])**2)**(0.5)
+            d2 = ((p2[0] - sol2[0])**2 + (p2[1] - sol2[1])**2)**(0.5)
 
-                if dist_sol1 > dist_sol2:
-                    circ_point = sol[1]
-                elif dist_sol1 < dist_sol2:
-                    circ_point = sol[0]
-                else:
-                    d1 = sol1.distance(p2)
-                    d2 = sol2.distance(p2)
-
-                    if d1 < d2:
-                        circ_point = sol[0]
-                    else:
-                        circ_point = sol[1]
+            if d1 <= d2:
+                circ_point = sol[0]
+            else:
+                circ_point = sol[1]
 
                     
 
-                circ_point = Point(circ_point[0], circ_point[1])
-            except:
-                randomWalk_x_A.append(old_x_A)
-                randomWalk_y_A.append(old_y_A)
-
-                flag_A_ref = True
-                break
+            circ_point = Point(circ_point[0], circ_point[1])
+            
+                
                 
 
             #we know the overflow amount, call that overflowed
@@ -172,31 +164,21 @@ def circular_random_walk():
             Theta = main_ang
 
             if p2[0] < 0 and p2[1] > 0:    #second
-                if incident[1] >= incident[0]:
-                    Theta = float(-Theta)
-                else:
-                    Theta = float(-Theta)
+                Theta = -Theta
 
             elif p2[0] > 0 and p2[1] > 0:   #first
                 if incident[1] >= incident[0]:
-                    Theta = float(-Theta)
-                else:
-                    Theta = float(Theta)
+                    Theta = -Theta
+                
             
             elif p2[0] > 0 and p2[1] < 0:
-                if incident[1] <= -incident[0]:   #fourth
-                    Theta = float(Theta)
-                else:
-                    Theta = float(-Theta)
+                if incident[1] > -incident[0]:   #fourth
+                    Theta = -Theta
+                
 
             elif p2[0] < 0 and p2[1] < 0:
                 if incident[1] <= incident[0]:
-                    Theta = float(-Theta)
-                else:
-                    Theta = float(Theta)
-
-            else:
-                Theta = float(Theta)
+                    Theta = -Theta
 
             
 
@@ -243,23 +225,17 @@ def circular_random_walk():
 
         while distance_from_origin_B >= (Radius):
 
-            new_x_B = round(new_x_B, 20)
-            new_y_B = round(new_y_B, 20)
+            new_x_B = '%.3f'%(new_x_B)
+            new_y_B = '%.3f'%(new_y_B)
 
-            new_x_B = float('%.3f'%(new_x_B))
-            new_y_B = float('%.3f'%(new_y_B))
-
-            old_x_B = round(randomWalk_x_B[-1], 20)
-            old_y_B = round(randomWalk_y_B[-1], 20) 
-
-            old_x_B = float('%.3f'%(old_x_B))
-            old_y_B = float('%.3f'%(old_y_B))           
+            old_x_B = '%.3f'%(randomWalk_x_B[-1])
+            old_y_B = '%.3f'%(randomWalk_y_B[-1])            
 
             p1, p2 = Point(old_x_B, old_y_B) , Point(new_x_B, new_y_B)
 
             if p1.equals(p2):
-                randomWalk_x_A.append(old_x_B)
-                randomWalk_y_A.append(old_y_B)
+                randomWalk_x_B.append(old_x_B)
+                randomWalk_y_B.append(old_y_B)
                 
                 flag_B_ref = True
                 break
@@ -279,35 +255,24 @@ def circular_random_walk():
 
 
             #find the point on the circumference where our line will touch, call it circpoint
-            try:
-                sol1 = Point(sol[0][0], sol[0][1])
-                sol2 = Point(sol[1][0], sol[1][1])                
+            
+            sol1 = (sol[0][0], sol[0][1])
+            sol2 = (sol[1][0], sol[1][1])                
 
-                dist_sol1 = p1.distance(sol1)
-                dist_sol2 = p1.distance(sol2)
+            
+            d1 = ((p2[0] - sol1[0])**2 + (p2[1] - sol1[1])**2)**(0.5)
+            d2 = ((p2[0] - sol2[0])**2 + (p2[1] - sol2[1])**2)**(0.5)
 
-                if dist_sol1 > dist_sol2:
-                    circ_point = sol[1]
-                elif dist_sol1 < dist_sol2:
-                    circ_point = sol[0]
-                else:
-                    d1 = sol1.distance(p2)
-                    d2 = sol2.distance(p2)
-
-                    if d1 < d2:
-                        circ_point = sol[0]
-                    else:
-                        circ_point = sol[1]
+            if d1 <= d2:
+                circ_point = sol[0]
+            else:
+                circ_point = sol[1]
 
                     
 
-                circ_point = Point(circ_point[0], circ_point[1])
-            except:
-                randomWalk_x_B.append(old_x_B)
-                randomWalk_y_B.append(old_y_B)
-
-                flag_B_ref = True
-                break
+            circ_point = Point(circ_point[0], circ_point[1])
+            
+                
                 
 
             #we know the overflow amount, call that overflowed
@@ -345,31 +310,21 @@ def circular_random_walk():
             Theta = main_ang
 
             if p2[0] < 0 and p2[1] > 0:    #second
-                if incident[1] >= incident[0]:
-                    Theta = float(-Theta)
-                else:
-                    Theta = float(-Theta)
+                Theta = -Theta
 
             elif p2[0] > 0 and p2[1] > 0:   #first
                 if incident[1] >= incident[0]:
-                    Theta = float(-Theta)
-                else:
-                    Theta = float(Theta)
+                    Theta = -Theta
+                
             
             elif p2[0] > 0 and p2[1] < 0:
-                if incident[1] <= -incident[0]:   #fourth
-                    Theta = float(Theta)
-                else:
-                    Theta = float(-Theta)
+                if incident[1] > -incident[0]:   #fourth
+                    Theta = -Theta
+                
 
             elif p2[0] < 0 and p2[1] < 0:
                 if incident[1] <= incident[0]:
-                    Theta = float(-Theta)
-                else:
-                    Theta = float(Theta)
-
-            else:
-                Theta = float(Theta)
+                    Theta = -Theta
 
             
 
@@ -399,7 +354,7 @@ def circular_random_walk():
             randomWalk_y_B.append(circ_point[1])
             
 
-            distance_from_origin = math.sqrt((final[0])**2 + (final[1])**2)
+            distance_from_origin = ((final[0])**2 + (final[1])**2)**(0.5)
 
             if distance_from_origin >= Radius:
                 flag_B_ref = True
@@ -437,20 +392,25 @@ def circular_random_walk():
         curr_A = (randomWalk_x_A[-1], randomWalk_y_A[-1])
         curr_B = (randomWalk_x_B[-1], randomWalk_y_B[-1])
 
-        dist_between_particles = math.sqrt((curr_B[0] - curr_A[0])**2 + (curr_B[1] - curr_A[1])**2)
+        dist_between_particles = ((curr_B[0] - curr_A[0])**2 + (curr_B[1] - curr_A[1])**2)**(0.5)
+
+        counter += 1
+        if counter % 1000 == 0:
+            print(counter)
 
         if dist_between_particles <= 1:
-            return steps
             break
 
 
-
-    return steps
     
-    #size = size + step_addition
+
+    #return steps
+    
+    size_A = steps + step_addition_A
+    size_B = steps + step_addition_B
 
 
-#########################################################
+########################################################
 #UNCOMMENT FOR ANIMATION
 
     # xdata, ydata = [], []
@@ -475,7 +435,7 @@ def circular_random_walk():
 
 
 #ANIMATION CODE
-########################################################
+#######################################################
 
 
     circle1=plt.Circle((0,0),Radius,color='r', alpha= 0.2)
@@ -490,8 +450,5 @@ def circular_random_walk():
 
 
 
-simulations = 200
-results = []
+circular_random_walk()
 
-for i in range(simulations):
-    results.append(circular_random_walk)

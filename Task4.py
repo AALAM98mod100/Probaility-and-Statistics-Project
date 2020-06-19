@@ -3,6 +3,7 @@ from random import seed
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
+import csv
 
 
 
@@ -30,7 +31,13 @@ def One_D_random_walk(start_pos, steps):
         nums.append(j)
 
     
-    Distance_from_start_pos = randomWalk[-1] - 0
+    Distance_from_start_pos = randomWalk[-1] - start_pos
+
+
+    ##Keep this uncommented to see the plot
+    return Distance_from_start_pos
+    ######################################
+
 
     print("Distance from starting position is {}".format(Distance_from_start_pos))
 
@@ -58,4 +65,21 @@ def One_D_random_walk(start_pos, steps):
     plt.show()
 
 
-#One_D_random_walk(0, 100)
+simulations = 500
+
+f = open(r"C:\Users\Altaf Shaikh\Desktop\simresult_task_4.csv", 'w')
+
+with f:
+
+    writer = csv.writer(f)
+    
+    for i in range(simulations):
+        ans = One_D_random_walk(0, 10000)
+
+        row = [i, ans]
+
+        writer.writerow(row)
+
+        print(i, " Done")
+
+f.close()
